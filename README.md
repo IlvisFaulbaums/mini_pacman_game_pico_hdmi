@@ -1,4 +1,5 @@
 # mini_pacman_game_pico_hdmi
+Compiles best on Linux system. <br>
 Mini pacman game trough hdmi trough raspberry pico pi and spotpear Pico HDMI Board <br>
 All You need is Arduino IDE with installed Raspberry Pico pi board:<br>
 in file -> preferences -> Additional Boards Manager URLs:<br>
