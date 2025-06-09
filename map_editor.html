@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Level Editor with Brush Buttons</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    canvas { border: 1px solid black; cursor: pointer; margin: 10px; }
+    button {
+      font-size: 16px;
+      margin: 5px;
+      padding: 8px 16px;
+      cursor: pointer;
+      border: 2px solid #ccc;
+      background: white;
+      border-radius: 4px;
+    }
+    button.selected {
+      border-color: #333;
+      background: #ddd;
+      font-weight: bold;
+    }
+    #output {
+      text-align: left;
+      max-width: 640px;
+      margin: 10px auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 6px;
+      user-select: all;
+    }
+  </style>
+</head>
+<body>
+  <h1>Level Editor with Brush Buttons</h1>
+
+  <div>
+    <button id="btnEmpty" class="selected" onclick="selectBrush(0)">Empty (0)</button>
+    <button id="btnPlayer" onclick="selectBrush(1)">Player (1)</button>
+    <button id="btnGoal" onclick="selectBrush(2)">Goal (2)</button>
+    <button id="btnObstacle" onclick="selectBrush(3)">Obstacle (3)</button>
+  </div>
+
+  <canvas id="editorCanvas" width="640" height="480"></canvas><br>
+  <button onclick="exportLevel()">Export Level</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    const canvas = document.getElementById("editorCanvas");
+    const ctx = canvas.getContext("2d");
+    const cols = 16;
+    const rows = 12;
+    const tileSize = 40;
+
+    const TILE = {
+      EMPTY: 0,
+      PLAYER: 1,
+      GOAL: 2,
+      OBSTACLE: 3
+    };
+
+    const colors = ["#ffffff", "#ff4444", "#4444ff", "#444444"];
+    const level = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+    let currentBrush = TILE.EMPTY;
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          ctx.fillStyle = colors[level[y][x]];
+          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+          ctx.strokeStyle = "#cccccc";
+          ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        }
+      }
+    }
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / tileSize);
+      const y = Math.floor((e.clientY - rect.top) / tileSize);
+      if (x >= 0 && y >= 0 && x < cols && y < rows) {
+        level[y][x] = currentBrush;
+        drawGrid();
+      }
+    });
+
+    function selectBrush(brush) {
+      currentBrush = brush;
+      // Update button styles
+      document.querySelectorAll("button").forEach(btn => btn.classList.remove("selected"));
+      if (brush === TILE.EMPTY) document.getElementById("btnEmpty").classList.add("selected");
+      if (brush === TILE.PLAYER) document.getElementById("btnPlayer").classList.add("selected");
+      if (brush === TILE.GOAL) document.getElementById("btnGoal").classList.add("selected");
+      if (brush === TILE.OBSTACLE) document.getElementById("btnObstacle").classList.add("selected");
+    }
+
+    function exportLevel() {
+      const text = "uint8_t levelMap[" + rows + "][" + cols + "] = {\n" +
+        level.map(row => "  {" + row.join(", ") + "}").join(",\n") + "\n};";
+      document.getElementById("output").textContent = text;
+      navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+    }
+
+    drawGrid();
+  </script>
+</body>
+</html>
+
